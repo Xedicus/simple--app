@@ -39,6 +39,10 @@ jobs:
       - name: Install dependencies
         run: npm install # Installe les dépendances du projet
 
+      - name: Fix permissions
+        run: sudo chown -R $USER:$USER node_modules # Corrige les permissions pour le répertoire node_modules
+        # Permet de résoudre les problèmes de permissions avec `npm test`
+
       - name: Run tests
         env:
           DB_HOST: localhost # Configure les variables d'environnement pour les tests
