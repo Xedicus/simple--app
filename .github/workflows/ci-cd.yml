@@ -61,7 +61,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          docker push my-dockerhub-username/simple--app:latest
+          docker xedicus13/simple--app:latest
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
