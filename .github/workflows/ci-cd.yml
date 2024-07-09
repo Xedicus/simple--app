@@ -36,22 +36,43 @@ jobs:
         with:
           node-version: "18" # Définit la version de Node.js
 
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version # Vérifie l'installation de Docker Compose
+
       - name: Install dependencies
         run: npm install # Installe les dépendances du projet
 
       - name: Fix permissions
         run: sudo chown -R $USER:$USER node_modules # Corrige les permissions pour le répertoire node_modules
-        # Permet de résoudre les problèmes de permissions avec `npm test`
 
-      - name: Build Docker image
-        run: docker build -t my-app . # Construit l'image Docker
+      - name: Run tests
+        env:
+          DB_HOST: localhost # Configure les variables d'environnement pour les tests
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: testdb
+        run: npm test # Exécute les tests du projet
+
+      - name: Build Docker images
+        run: docker-compose build # Construit les images Docker en utilisant Docker Compose
+        # Cette étape construit les services définis dans docker-compose.yml
+
+      - name: Verify Docker images
+        run: docker images # Vérifie que les images Docker ont été construites avec succès
+
+      - name: Tag Docker image
+        run: |
+          docker tag simple--app my-dockerhub-username/simple--app:latest # Tag l'image Docker
+        # Assurez-vous que l'image existe avant de la taguer
 
       - name: Publish Docker image
         if: github.ref == 'refs/heads/main'
         run: |
-          docker tag simple--app xedicus13/simple--app:latest
           echo "${{ secrets.DOCKER_HUB_PASSWORD}}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          docker push xedicus13/my-app:latest  # Pousse l'image Docker vers Docker Hub
+          docker push xedicus13/simple--app:latest # Pousse l'image Docker vers Docker Hub
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_PASSWORD }}
