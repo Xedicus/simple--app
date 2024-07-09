@@ -1,0 +1,61 @@
+# .github/workflows/ci-cd.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main # Exécute le workflow sur les push vers la branche main
+  pull_request:
+    branches:
+      - main # Exécute le workflow lors des pull requests vers la branche main
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest # Utilise une image Ubuntu pour exécuter les jobs
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306 # Expose le port MySQL pour l'accès par le conteneur
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3 # Clone le repository pour le job
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18" # Définit la version de Node.js
+
+      - name: Install dependencies
+        run: npm install # Installe les dépendances du projet
+
+      - name: Run tests
+        env:
+          DB_HOST: localhost # Configure les variables d'environnement pour les tests
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: testdb
+        run: npm test # Exécute les tests du projet
+
+      - name: Build Docker image
+        run: docker build -t my-app . # Construit l'image Docker
+
+      - name: Publish Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag my-app my-dockerhub-username/my-app:latest
+          echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          docker push my-dockerhub-username/my-app:latest  # Pousse l'image Docker vers Docker Hub
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
