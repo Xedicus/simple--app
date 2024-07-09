@@ -54,7 +54,7 @@ jobs:
         run: docker images
 
       - name: Tag Docker image
-        run: docker tag simple--app xedicus13/simple--app-app:latest
+        run: docker tag simple--app-app xedicus13/simple--app-app:latest
 
       - name: Publish Docker image
         if: github.ref == 'refs/heads/main'
