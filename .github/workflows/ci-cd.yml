@@ -55,11 +55,6 @@ jobs:
       - name: Verify Docker images
         run: docker images # Vérifie que les images Docker ont été construites avec succès
 
-      - name: Tag Docker image
-        run: |
-          docker tag simple--app my-dockerhub-username/simple--app:latest # Tag l'image Docker
-        # Assurez-vous que l'image existe avant de la taguer
-
       - name: Publish Docker image
         if: github.ref == 'refs/heads/main'
         run: |
