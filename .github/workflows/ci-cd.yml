@@ -49,7 +49,7 @@ jobs:
       - name: Publish Docker image
         if: github.ref == 'refs/heads/main'
         run: |
-          docker tag my-app my-dockerhub-username/my-app:latest
+          docker tag simple--app xedicus13/simple--app:latest
           echo "${{ secrets.DOCKER_HUB_PASSWORD}}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
           docker push my-dockerhub-username/my-app:latest  # Pousse l'image Docker vers Docker Hub
         env:
