@@ -4,14 +4,14 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main # Exécute le workflow sur les push vers la branche main
+      - main
   pull_request:
     branches:
-      - main # Exécute le workflow lors des pull requests vers la branche main
+      - main
 
 jobs:
   build_and_test:
-    runs-on: ubuntu-latest # Utilise une image Ubuntu pour exécuter les jobs
+    runs-on: ubuntu-latest
 
     services:
       mysql:
@@ -20,7 +20,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: testdb
         ports:
-          - 3306:3306 # Expose le port MySQL pour l'accès par le conteneur
+          - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
@@ -29,37 +29,39 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3 # Clone le repository pour le job
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18" # Définit la version de Node.js
+          node-version: "18"
 
       - name: Install Docker Compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version # Vérifie l'installation de Docker Compose
+          docker-compose --version
 
       - name: Install dependencies
-        run: npm install # Installe les dépendances du projet
+        run: npm install
 
       - name: Fix permissions
-        run: sudo chown -R $USER:$USER node_modules # Corrige les permissions pour le répertoire node_modules
+        run: sudo chown -R $USER:$USER node_modules
 
       - name: Build Docker images
-        run: docker-compose build # Construit les images Docker en utilisant Docker Compose
-        # Cette étape construit les services définis dans docker-compose.yml
+        run: docker-compose build
 
       - name: Verify Docker images
-        run: docker images # Vérifie que les images Docker ont été construites avec succès
+        run: docker images
+
+      - name: Tag Docker image
+        run: docker tag simple--app xedicus13/simple--app:latest
 
       - name: Publish Docker image
         if: github.ref == 'refs/heads/main'
         run: |
-          echo "${{ secrets.DOCKER_HUB_PASSWORD}}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          docker push xedicus13/simple--app:latest # Pousse l'image Docker vers Docker Hub
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          docker push my-dockerhub-username/simple--app:latest
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
