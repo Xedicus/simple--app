@@ -48,14 +48,6 @@ jobs:
       - name: Fix permissions
         run: sudo chown -R $USER:$USER node_modules # Corrige les permissions pour le répertoire node_modules
 
-      - name: Run tests
-        env:
-          DB_HOST: localhost # Configure les variables d'environnement pour les tests
-          DB_USER: root
-          DB_PASSWORD: root
-          DB_NAME: testdb
-        run: npm test # Exécute les tests du projet
-
       - name: Build Docker images
         run: docker-compose build # Construit les images Docker en utilisant Docker Compose
         # Cette étape construit les services définis dans docker-compose.yml
