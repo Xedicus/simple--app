@@ -57,6 +57,8 @@ app.delete("/api/data/:id", (req, res) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 // Démarrer le serveur
-app.listen(3000, () => {
+const server = app.listen(3000, () => {
   console.log("Serveur en cours d'exécution sur http://localhost:3000");
 });
+
+module.exports = { app, server };
